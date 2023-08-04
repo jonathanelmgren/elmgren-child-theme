@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      WORDPRESS_DB_NAME: ${MARIADB_DATABASE}
+      WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX}
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
+    volumes:
+      - .:/var/www/html/wp-content/themes/${COMPOSE_PROJECT_NAME}/:cached
+
+  db:
+    platform: linux/amd64
+    image: mariadb:latest
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX}
+      WORDPRESS_SITE_URL: ${WORDPRESS_SITE_URL}
+    volumes:
+      - db:/var/lib/mysql:cached
+      - ./docker/sql:/docker-entrypoint-initdb.d:cached
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 8025:8025
+volumes:
+  db:

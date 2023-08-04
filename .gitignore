@@ -1,0 +1,15 @@
+node_modules
+dist
+vendor
+.wp
+
+docker/*/*
+!docker/*/.gitkeep
+!docker/*/zwpmigrate.sh
+!docker/ssl/ssl.sh
+!docker/ssl/openssl.cfg
+
+.env*
+!.env.example
+
+.DS_Store
