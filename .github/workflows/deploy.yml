@@ -13,15 +13,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Load .env file
-      id: dotenv
-      uses: c-py/action-dotenv-to-setenv@v3
-      with:
-        env-file: .env
-
     - name: Get the version
       id: get_version
       run: echo "::set-output name=version::$(grep 'Version:' style.css | awk '{print $2}')"
+
+    - name: Get repo name
+      id: repo_name
+      run: echo "::set-output name=repo::$(echo ${{ github.repository }} | cut -d'/' -f2)"
 
     - name: Set up PHP
       uses: shivammathur/setup-php@v2
@@ -43,12 +41,12 @@ jobs:
       run: npm run build
 
     - name: Zip the repository
-      run: zip -r ${{ env.COMPOSE_PROJECT_NAME }}.zip ./* 
+      run: zip -r ${{ steps.repo_name.outputs.repo }}.zip ./* 
 
     - name: Upload Release to GitHub
       uses: softprops/action-gh-release@v1
       with:
-        files: ${{ env.COMPOSE_PROJECT_NAME }}.zip
+        files: ${{ steps.repo_name.outputs.repo }}.zip
         tag_name: ${{ steps.get_version.outputs.version }}
         name: Release-${{ steps.get_version.outputs.version }}
       env:
