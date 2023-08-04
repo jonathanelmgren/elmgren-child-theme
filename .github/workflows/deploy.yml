@@ -1,0 +1,55 @@
+name: PHP Composer and Node.js Build & Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Load .env file
+      id: dotenv
+      uses: c-py/action-dotenv-to-setenv@v3
+      with:
+        env-file: .env
+
+    - name: Get the version
+      id: get_version
+      run: echo "::set-output name=version::$(grep 'Version:' style.css | awk '{print $2}')"
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build package
+      run: npm run build
+
+    - name: Zip the repository
+      run: zip -r ${{ env.COMPOSE_PROJECT_NAME }}.zip ./* 
+
+    - name: Upload Release to GitHub
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ${{ env.COMPOSE_PROJECT_NAME }}.zip
+        tag_name: ${{ steps.get_version.outputs.version }}
+        name: Release-${{ steps.get_version.outputs.version }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

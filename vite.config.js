@@ -7,6 +7,7 @@ import { resolve } from 'path'
 const input = ['assets/scss/main.scss', "assets/js/plugins.js"]
 if (existsSync(`blocks`)) {
     for (const dir of readdirSync('blocks')) {
+        if (dir.startsWith('.')) continue
         const files = readdirSync(`blocks/${dir}`)
         for (const file of files) {
             if (file === `${dir}.scss` || file === `${dir}.js`) {

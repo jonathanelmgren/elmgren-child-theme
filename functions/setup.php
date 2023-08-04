@@ -8,7 +8,7 @@ function register_acf_blocks()
     foreach ($blocks as $block) {
         $dir = get_stylesheet_directory() . '/blocks/' . $block;
         $file = $dir . '/settings.php';
-        if(\file_exists($file)){
+        if (\file_exists($file)) {
             require_once $dir . '/settings.php';
             register_block_type($dir);
         }
@@ -17,7 +17,8 @@ function register_acf_blocks()
 add_action('init', 'register_acf_blocks');
 
 // Register styles and scripts
-function pp_enqueue_styles_and_scripts() {
+function pp_enqueue_styles_and_scripts()
+{
     $dist_path = get_stylesheet_directory() . '/dist/';
 
     // Enqueue styles.
@@ -37,3 +38,36 @@ function pp_enqueue_styles_and_scripts() {
 }
 add_action('wp_enqueue_scripts', 'pp_enqueue_styles_and_scripts');
 add_action('admin_enqueue_scripts', 'pp_enqueue_styles_and_scripts');
+
+// Create generic function to include all files in specific folders
+if (!function_exists('ec_include_folder')) {
+    function ec_include_folder($folder)
+    {
+        // Make sure we have forwardslash before and after folder
+        $folder = \str_starts_with($folder, '/') ? $folder : '/' . $folder;
+        $folder = \str_ends_with($folder, '/') ? $folder : $folder . '/';
+
+        // Get complete folder path
+        $folder = get_stylesheet_directory() . $folder;
+
+        // Return empty array if not found
+        if (!is_dir($folder)) {
+            return [];
+        }
+        $content = scandir($folder, 1);
+        if (!$content || !\is_array($content)) {
+            return [];
+        }
+
+        // Clear folders out to only get files
+        $content = array_filter($content, function ($item) use ($folder) {
+            return !is_dir($folder . $item);
+        });
+
+        foreach ($content as $file) {
+            if (\str_ends_with($file, '.php')) {
+                require_once $folder . $file;
+            }
+        }
+    }
+}
