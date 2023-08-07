@@ -18,6 +18,8 @@ services:
       WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
     volumes:
       - .:/var/www/html/wp-content/themes/${COMPOSE_PROJECT_NAME}/:cached
+    env_file:
+      - ./.env
 
   db:
     platform: linux/amd64

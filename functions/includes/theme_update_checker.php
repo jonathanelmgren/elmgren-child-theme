@@ -10,13 +10,13 @@ class Theme_Child_Updater
 
     public function __construct()
     {
-        $this->project_name = getenv('GITHUB_REPO') ?: getenv('COMPOSE_PROJECT_NAME');
+        $this->project_name = $_ENV['GITHUB_REPO'] ?? $_ENV['COMPOSE_PROJECT_NAME'] ?? null;
         $this->user = 'jonathanelmgren';
         $this->repo = $this->project_name;
         $this->theme = wp_get_theme($this->project_name);
         $this->github_auth_args = array(
             'headers' => array(
-                'Authorization' => 'token ' . getenv('GITHUB_TOKEN'),
+                'Authorization' => 'token ' . $_ENV['GITHUB_TOKEN'],
             ),
         );
 
