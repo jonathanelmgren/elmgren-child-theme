@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
 
 jobs:
   build:
@@ -43,11 +48,22 @@ jobs:
     - name: Zip the repository
       run: zip -r ${{ steps.repo_name.outputs.repo }}.zip ./* 
 
+    - name: Determine release type (live or beta)
+      id: release_type
+      run: |
+        if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+          echo "::set-output name=tag::${{ steps.get_version.outputs.version }}-beta"
+          echo "::set-output name=name::Beta Release-${{ steps.get_version.outputs.version }}"
+        else
+          echo "::set-output name=tag::${{ steps.get_version.outputs.version }}"
+          echo "::set-output name=name::Release-${{ steps.get_version.outputs.version }}"
+        fi
+
     - name: Upload Release to GitHub
       uses: softprops/action-gh-release@v1
       with:
         files: ${{ steps.repo_name.outputs.repo }}.zip
-        tag_name: ${{ steps.get_version.outputs.version }}
-        name: Release-${{ steps.get_version.outputs.version }}
+        tag_name: ${{ steps.release_type.outputs.tag }}
+        name: ${{ steps.release_type.outputs.name }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
