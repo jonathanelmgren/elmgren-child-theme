@@ -21,7 +21,6 @@ class Theme_Child_Updater
         );
 
         if ($this->theme->exists()) {
-            // Check for updates
             add_filter('pre_set_site_transient_update_themes', array($this, 'check_update'));
         }
     }
@@ -32,10 +31,11 @@ class Theme_Child_Updater
             return $transient;
         }
 
-        // Get the latest release from GitHub
-        $release = $this->get_latest_release();
+        $release = $this->get_appropriate_release();
+        if (!$release) {
+            return $transient;
+        }
 
-        // If a new version is available, set the transient
         if (version_compare($this->theme->version, $release->tag_name, '<')) {
             $asset = $this->get_asset_download_url($release->assets_url);
             if ($asset !== false) {
@@ -51,21 +51,28 @@ class Theme_Child_Updater
         return $transient;
     }
 
-    private function get_latest_release()
+    private function get_appropriate_release()
     {
-        $url = "https://api.github.com/repos/{$this->user}/{$this->repo}/releases/latest";
+        $url = "https://api.github.com/repos/{$this->user}/{$this->repo}/releases";
 
-        // Get the JSON response from the provided URL
         $response = wp_remote_get($url, $this->github_auth_args);
         $response_body = wp_remote_retrieve_body($response);
 
-        // Check for error
         if (is_wp_error($response) || empty($response_body)) {
             return false;
         }
 
-        // Decode the JSON response
-        return json_decode($response_body);
+        $releases = json_decode($response_body);
+
+        if ($this->is_beta()) {
+            foreach ($releases as $release) {
+                if (strpos($release->tag_name, 'beta') !== false) {
+                    return $release;
+                }
+            }
+        }
+
+        return $releases[0];
     }
 
     private function get_asset_download_url($url)
@@ -73,7 +80,6 @@ class Theme_Child_Updater
         $response = wp_remote_get($url, $this->github_auth_args);
         $response_body = wp_remote_retrieve_body($response);
 
-        // Check for error
         if (is_wp_error($response) || empty($response_body)) {
             return false;
         }
@@ -85,6 +91,15 @@ class Theme_Child_Updater
             }
         }
 
+        return false;
+    }
+
+    private function is_beta()
+    {
+        $options = get_field('beta', 'options');
+        if (is_array($options) && array_key_exists('allow_beta_child', $options)) {
+            return $options['allow_beta_child'];
+        }
         return false;
     }
 }
