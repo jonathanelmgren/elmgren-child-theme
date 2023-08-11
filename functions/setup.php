@@ -17,27 +17,26 @@ function register_acf_blocks()
 add_action('init', 'register_acf_blocks');
 
 // Register styles and scripts
-function pp_enqueue_styles_and_scripts()
+function ec_enqueue_styles_and_scripts()
 {
     $dist_path = get_stylesheet_directory() . '/dist/';
 
     // Enqueue styles.
     foreach (glob($dist_path . 'css/*.css') as $file) {
+        $handle = 'child-' . basename($file, '.css');
         $file_url = get_stylesheet_directory_uri() . '/dist/css/' . basename($file);
-        wp_enqueue_style(basename($file), $file_url);
+        wp_enqueue_style($handle, $file_url, array('elm-' . basename($file, '.css')));
     }
 
     // Enqueue scripts.
     foreach (glob($dist_path . 'js/*.js') as $file) {
+        $handle = 'child-' . basename($file, '.js');
         $file_url = get_stylesheet_directory_uri() . '/dist/js/' . basename($file);
-        wp_enqueue_script(basename($file), $file_url, array(), null, true);
+        wp_enqueue_script($handle, $file_url, array('jquery'), null, true);
     }
-
-    // Enqueue jQuery
-    wp_enqueue_script('jquery');
 }
-add_action('wp_enqueue_scripts', 'pp_enqueue_styles_and_scripts');
-add_action('admin_enqueue_scripts', 'pp_enqueue_styles_and_scripts');
+add_action('wp_enqueue_scripts', 'ec_enqueue_styles_and_scripts');
+add_action('admin_enqueue_scripts', 'ec_enqueue_styles_and_scripts');
 
 // Create generic function to include all files in specific folders
 if (!function_exists('ec_include_folder')) {

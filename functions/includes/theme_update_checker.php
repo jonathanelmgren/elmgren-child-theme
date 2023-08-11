@@ -10,23 +10,28 @@ class Theme_Child_Updater
 
     public function __construct()
     {
-        $this->project_name = $_ENV['GITHUB_REPO'] ?? $_ENV['COMPOSE_PROJECT_NAME'] ?? null;
+        $this->github_token = GITHUB_TOKEN ?? null;
+        $this->project_name = GITHUB_REPO ?? COMPOSE_PROJECT_NAME ?? null;
+
         $this->user = 'jonathanelmgren';
         $this->repo = $this->project_name;
         $this->theme = wp_get_theme($this->project_name);
+
         $this->github_auth_args = array(
             'headers' => array(
-                'Authorization' => 'token ' . $_ENV['GITHUB_TOKEN'],
+                'Authorization' => 'token ' . $this->github_token,
             ),
         );
 
         if ($this->theme->exists()) {
+            add_filter('http_request_args', array($this, 'add_github_auth_headers'), 10, 2);
             add_filter('pre_set_site_transient_update_themes', array($this, 'check_update'));
         }
     }
 
     public function check_update($transient)
     {
+
         if (empty($transient->checked)) {
             return $transient;
         }
@@ -71,7 +76,6 @@ class Theme_Child_Updater
                 }
             }
         }
-
         return $releases[0];
     }
 
@@ -87,7 +91,7 @@ class Theme_Child_Updater
         $assets = json_decode($response_body);
         foreach ($assets as $asset) {
             if ($asset->name === $this->project_name . '.zip') {
-                return $asset->browser_download_url;
+                return $asset->url;
             }
         }
 
@@ -101,6 +105,16 @@ class Theme_Child_Updater
             return $options['allow_beta_child'];
         }
         return false;
+    }
+    public function add_github_auth_headers($args, $url)
+    {
+        if (preg_match("#^https://api\.github\.com/repos/{$this->user}/{$this->repo}/releases/assets/\d+$#", $url)) {
+            $download_args = $this->github_auth_args;
+            $download_args['headers']['Accept'] = 'application/octet-stream';
+            $args = wp_parse_args($download_args, $args);
+        }
+
+        return $args;
     }
 }
 
