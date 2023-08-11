@@ -21,17 +21,24 @@ cd project-name
 
 The project name should for simplicity always be the same as the theme name (COMPOSE_PROJECT_NAME).
 
-### 2. Configure Environment Variables
+### 2. Naming the project
+
+#### 2.1 Go to `package.json` and change the name to the same as the theme name.
+#### 2.2 Go to `style.css` and make changes accordingly.
+#### 2.3 Do a search & replace for `ec_` to your own function prefix. This is to avoid conflicts with other plugins and themes.
+
+### 3. Configure Environment Variables
 
 Edit the `.env` file in the root directory. Set the necessary environment variables like `WORDPRESS_DB_HOST`, `WORDPRESS_SITE_URL`, etc. Here are some key variables:
 
-- `COMPOSE_PROJECT_NAME`: The name of your Docker Compose project.
+- `COMPOSE_PROJECT_NAME`: The name of your Docker Compose project, should be the same as your theme.
 - `GITHUB_TOKEN`: Your GitHub token, if required.
 - `WORDPRESS_DB_HOST`, `WORDPRESS_DB_USER`, etc.: WordPress database configurations.
 - `MARIADB_ROOT_PASSWORD`, `MARIADB_DATABASE`: MariaDB configurations.
 - `SYNC_PROD_SSH_USER`, `SYNC_PROD_SSH_HOST`, etc.: Details for syncing with the production environment.
 
-### 3. Generate SSL Certificates
+`GITHUB_TOKEN` is required if the repository is private and this should be defined in your wp-config.php file. 
+### 4. Generate SSL Certificates
 
 Run the `ssl.sh` script to generate a self-signed SSL certificate for local development.
 
@@ -41,7 +48,7 @@ docker/ssl/ssl.sh
 
 **Note**: For macOS users, the script also adds the certificate to the system keychain. Ensure you have the necessary permissions.
 
-### 4. Build and Start the Docker Containers
+### 5. Build and Start the Docker Containers
 
 Use Docker Compose to build and run the services.
 
@@ -49,7 +56,7 @@ Use Docker Compose to build and run the services.
 docker-compose up --build
 ```
 
-### 5. Access the WordPress Site
+### 6. Access the WordPress Site
 
 Once the containers are up and running, you can access the WordPress site via the URL you set in the `.env` file (e.g., `https://elmgren-child-theme.potato`).
 However, it is recommended to start a dev environment [using these steps](#development-commands)

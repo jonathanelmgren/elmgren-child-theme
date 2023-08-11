@@ -1,7 +1,7 @@
 <?php
 
 // Register blocks
-function register_acf_blocks()
+function ec_register_acf_blocks()
 {
     $blocks = array_diff(scandir(get_stylesheet_directory() . '/blocks/', 1), array('..', '.'));
 
@@ -14,7 +14,7 @@ function register_acf_blocks()
         }
     }
 }
-add_action('init', 'register_acf_blocks');
+add_action('init', 'ec_register_acf_blocks');
 
 // Register styles and scripts
 function ec_enqueue_styles_and_scripts()
