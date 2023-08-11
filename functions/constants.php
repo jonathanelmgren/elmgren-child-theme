@@ -15,4 +15,4 @@ function ec_define_env($name, $value = null)
 // If github token is not defined in wp-config, see if it exists in a .env file
 ec_define_env('GITHUB_TOKEN');
 ec_define_env('GITHUB_REPO');
-ec_define_env('COMPOSE_PROJECT_NAME', wp_get_theme()->get('Name'));
+ec_define_env('COMPOSE_PROJECT_NAME', wp_get_theme()->get_stylesheet());

@@ -11,7 +11,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -44,8 +43,15 @@ jobs:
     - name: Build package
       run: npm run build
 
+    - name: Prepare files for zipping
+      run: |
+        mkdir ${{ steps.repo_name.outputs.repo }}
+        # Use rsync to move files to avoid moving the created directory into itself.
+        rsync -a --exclude ${{ steps.repo_name.outputs.repo }} --exclude node_modules/ --exclude vendor/ . ${{ steps.repo_name.outputs.repo }}/ 
+
     - name: Zip the repository
-      run: zip -r ${{ steps.repo_name.outputs.repo }}.zip ./* 
+      run: zip -r ${{ steps.repo_name.outputs.repo }}.zip ${{ steps.repo_name.outputs.repo }} 
+
 
     - name: Determine release type (live or beta)
       id: release_type
