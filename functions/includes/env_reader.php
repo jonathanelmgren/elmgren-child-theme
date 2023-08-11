@@ -1,6 +1,6 @@
 <?php
 
-function parse_env_file($file){
+function ec_parse_env_file($file){
     if(!is_file($file) || !is_readable($file)){
         return false;
     }
@@ -21,4 +21,4 @@ function parse_env_file($file){
 }
 
 // Call the function to load the .env file
-parse_env_file(get_stylesheet_directory() . '/.env');
+ec_parse_env_file(get_stylesheet_directory() . '/.env');
