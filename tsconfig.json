@@ -1,21 +1,14 @@
 {
-    "compilerOptions": {
-      "target": "es5",                       // Specify ECMAScript target version
-      "module": "es6",                       // Specify module code generation
-      "moduleResolution": "node",            // Resolve using Node.js style
-      "jsx": "react",                        // Support for JSX. Use "react" for React projects
-      "outDir": "./dist",                    // Output directory for compiled files
-      "sourceMap": true,                     // Generate .map files
-      "strict": true,                        // Enable all strict type-checking options
-      "noImplicitAny": true,                 // Raise error on expressions and declarations with an implied 'any' type
-      "esModuleInterop": true,               // Enables emit interoperability between CommonJS and ES Modules
-      "skipLibCheck": true,                  // Skip type checking of declaration files
-      "forceConsistentCasingInFileNames": true,  // Disallow inconsistently-cased references to the same file
-      "resolveJsonModule": true              // Include modules imported with .json extension
-    },
-    "exclude": [
-      "node_modules",                        // Don't type check node_modules
-      "dist"                                 // Exclude the output directory
-    ]
-  }
-  
+	"include": ["assets/ts/**/*"],
+	"exclude": ["node_modules", "dist"],
+	"compilerOptions": {
+		"target": "es5" ,
+		"module": "commonjs",
+		"outDir": "./dist/js",
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"strict": true,
+		"skipDefaultLibCheck": true,
+		"skipLibCheck": true
+	}
+}
