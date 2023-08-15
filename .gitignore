@@ -13,3 +13,5 @@ docker/*/*
 !.env.example
 
 .DS_Store
+
+safelist.txt
