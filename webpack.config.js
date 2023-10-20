@@ -1,9 +1,26 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
+const RemoveEmptyScriptsPlugin = require('webpack-remove-empty-scripts');
 const fs = require('fs');
 const dotenv = require('dotenv');
+const glob = require('glob');
+
 dotenv.config();
+
+// Dynamic entries for TypeScript and SCSS
+const tsEntries = glob.sync('./assets/ts/*.ts*').reduce((acc, filePath) => {
+    const entry = path.basename(filePath, '.ts');
+    acc[`ts_${entry}`] = `./${filePath}`;
+    return acc;
+}, {});
+
+const scssEntries = glob.sync('./assets/scss/*.scss').reduce((acc, filePath) => {
+    const entry = path.basename(filePath, '.scss');
+    acc[`scss_${entry}`] = `./${filePath}`;
+    return acc;
+}, {});
+
 
 function getTailwindConfig() {
     const configFile = fs.readFileSync(path.resolve(__dirname, 'tailwind.config.js'), 'utf8');
@@ -11,8 +28,13 @@ function getTailwindConfig() {
 }
 
 const plugins = [
+    new RemoveEmptyScriptsPlugin(),
     new MiniCssExtractPlugin({
-        filename: 'css/[name].css'
+        filename: ({ chunk }) => {
+            return chunk.name.startsWith('scss_') ?
+                `css/${chunk.name.replace('scss_', '')}.css` :
+                undefined
+        },
     }),
     {
         apply: (compiler) => {
@@ -20,7 +42,8 @@ const plugins = [
                 const changedFiles = compilation.modifiedFiles;
                 if (!changedFiles || changedFiles.has(path.resolve(__dirname, 'tailwind.config.js'))) {
                     const config = getTailwindConfig();
-                    const colors = config.theme.extend.colors;
+                    let colors = config.theme.extend.colors;
+                    colors = Object.fromEntries(Object.entries(colors).filter(([key, value]) => typeof value === 'object'));
                     const phpOutput =
                         `
 // === START: Webpack Generated Block ===
@@ -64,6 +87,9 @@ if (typeof process.env.WORDPRESS_SITE_URL === 'string') {
                 './header.php',
                 './footer.php',
                 './templates/*.php',
+                './functions/**/*.php',
+                './classes/**/*.php',
+                './assets/**/*.{php,svg}'
             ],
             reloadDelay: 0,
             injectChanges: true,
@@ -73,11 +99,13 @@ if (typeof process.env.WORDPRESS_SITE_URL === 'string') {
 }
 
 module.exports = {
-    entry: {
-        main: ['./assets/ts/plugins.ts', './assets/scss/main.scss']
-    },
+    entry: { ...tsEntries, ...scssEntries },
     output: {
-        filename: 'js/[name].js',
+        filename: ({ chunk }) => {
+            return chunk.name.startsWith('ts_') ?
+                `js/${chunk.name.replace('ts_', '')}.js` :
+                'js/[name].js';
+        },
         path: path.resolve(__dirname, 'dist')
     },
     watchOptions: {
@@ -101,7 +129,8 @@ module.exports = {
                             postcssOptions: {
                                 plugins: [
                                     require('tailwindcss'),
-                                    require('autoprefixer')
+                                    require('autoprefixer'),
+                                    require('cssnano')
                                 ],
                             },
                         },

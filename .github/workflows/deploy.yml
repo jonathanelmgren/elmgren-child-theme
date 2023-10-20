@@ -3,9 +3,6 @@ name: PHP Composer and Node.js Build & Release
 on:
   push:
     branches:
-      - develop
-  pull_request:
-    branches:
       - main
       - develop
 

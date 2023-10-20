@@ -16,27 +16,21 @@ function ec_register_acf_blocks()
 }
 add_action('init', 'ec_register_acf_blocks');
 
-// Register styles and scripts
+// Register public styles and scripts
 function ec_enqueue_styles_and_scripts()
 {
-    $dist_path = get_stylesheet_directory() . '/dist/';
+    $dist_path = get_stylesheet_directory_uri() . '/dist/';
+    $css_path = $dist_path . 'css/';
+    $js_path = $dist_path . 'js/';
 
-    // Enqueue styles.
-    foreach (glob($dist_path . 'css/*.css') as $file) {
-        $handle = 'child-' . basename($file, '.css');
-        $file_url = get_stylesheet_directory_uri() . '/dist/css/' . basename($file);
-        wp_enqueue_style($handle, $file_url, array('elm-' . basename($file, '.css')));
-    }
+    // Scripts
+    wp_enqueue_script('jquery');
+    wp_enqueue_script('elm-child-main-js', $js_path . 'main.js', ['jquery'], false, true);
 
-    // Enqueue scripts.
-    foreach (glob($dist_path . 'js/*.js') as $file) {
-        $handle = 'child-' . basename($file, '.js');
-        $file_url = get_stylesheet_directory_uri() . '/dist/js/' . basename($file);
-        wp_enqueue_script($handle, $file_url, array('jquery'), null, true);
-    }
+    // Styles
+    wp_enqueue_style('elm-child-main-css', $css_path . 'main.css', ['elm-main-css']);
 }
 add_action('wp_enqueue_scripts', 'ec_enqueue_styles_and_scripts');
-add_action('admin_enqueue_scripts', 'ec_enqueue_styles_and_scripts');
 
 // Create generic function to include all files in specific folders
 if (!function_exists('ec_include_folder')) {
@@ -45,8 +39,10 @@ if (!function_exists('ec_include_folder')) {
         // Make sure we have forwardslash before and after folder
         $folder = \str_starts_with($folder, '/') ? $folder : '/' . $folder;
         $folder = \str_ends_with($folder, '/') ? $folder : $folder . '/';
+
         // Get complete folder path
         $folder = get_stylesheet_directory() . $folder;
+
         // Return empty array if not found
         if (!is_dir($folder)) {
             return [];
@@ -55,10 +51,12 @@ if (!function_exists('ec_include_folder')) {
         if (!$content || !\is_array($content)) {
             return [];
         }
+
         // Clear folders out to only get files
         $content = array_filter($content, function ($item) use ($folder) {
             return !is_dir($folder . $item);
         });
+
         foreach ($content as $file) {
             if (\str_ends_with($file, '.php')) {
                 require_once $folder . $file;
