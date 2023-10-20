@@ -25,7 +25,7 @@ function ec_enqueue_styles_and_scripts()
 
     // Scripts
     wp_enqueue_script('jquery');
-    wp_enqueue_script('elm-child-main-js', $js_path . 'main.js');
+    wp_enqueue_script('elm-child-main-js', $js_path . 'main.js', ['jquery'], false, true);
 
     // Styles
     wp_enqueue_style('elm-child-main-css', $css_path . 'main.css', ['elm-main-css']);

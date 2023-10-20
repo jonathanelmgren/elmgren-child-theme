@@ -9,7 +9,7 @@ const glob = require('glob');
 dotenv.config();
 
 // Dynamic entries for TypeScript and SCSS
-const tsEntries = glob.sync('./assets/ts/*.ts').reduce((acc, filePath) => {
+const tsEntries = glob.sync('./assets/ts/*.ts*').reduce((acc, filePath) => {
     const entry = path.basename(filePath, '.ts');
     acc[`ts_${entry}`] = `./${filePath}`;
     return acc;
@@ -42,7 +42,8 @@ const plugins = [
                 const changedFiles = compilation.modifiedFiles;
                 if (!changedFiles || changedFiles.has(path.resolve(__dirname, 'tailwind.config.js'))) {
                     const config = getTailwindConfig();
-                    const colors = config.theme.extend.colors;
+                    let colors = config.theme.extend.colors;
+                    colors = Object.fromEntries(Object.entries(colors).filter(([key, value]) => typeof value === 'object'));
                     const phpOutput =
                         `
 // === START: Webpack Generated Block ===
@@ -129,7 +130,7 @@ module.exports = {
                                 plugins: [
                                     require('tailwindcss'),
                                     require('autoprefixer'),
-                                    ...(process.env.NODE_ENV === 'production' ? [require('cssnano')] : [])
+                                    require('cssnano')
                                 ],
                             },
                         },
