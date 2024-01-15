@@ -1,14 +1,16 @@
 # Fetch the latest Wordpress image
 FROM wordpress:latest
 
-# Install required packages
+# Install required packages and clean up in the same layer
 RUN apt-get update && \
-    apt-get install -y nodejs unzip curl jq && \
-    curl -s https://getcomposer.org/installer | php && \
-    mv composer.phar /usr/local/bin/composer && \
-    curl -s https://deb.nodesource.com/setup_16.x | bash && \
-    apt-get install -y nodejs && \
-    apt-get install unzip
+    apt-get install -y unzip curl jq openssl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Update Node.js to a newer LTS version if necessary
+RUN curl -sS https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs
 
 # Fetch the latest theme files from GitHub
 RUN mkdir -p /usr/src/wordpress/wp-content/themes/elmgren-theme && \
@@ -18,17 +20,13 @@ RUN mkdir -p /usr/src/wordpress/wp-content/themes/elmgren-theme && \
     unzip -d /usr/src/wordpress/wp-content/themes/elmgren-theme elmgren-theme.zip && \
     rm -f elmgren-theme.zip
 
-# Install SSL dependencies
-RUN apt-get update && \
-    apt-get install -y openssl && \
-    a2enmod ssl && \
+# Enable SSL in Apache
+RUN a2enmod ssl && \
     a2enmod socache_shmcb && \
-    a2ensite default-ssl && \
-    rm -rf /var/lib/apt/lists/*
+    a2ensite default-ssl
 
-# Generate SSL certificate and key
+# Copy SSL certificates and update Apache configuration
 COPY docker/ssl/*.crt /etc/ssl/certs/server.crt
 COPY docker/ssl/*.key /etc/ssl/private/server.key
-
-RUN sed -i '/SSLCertificateFile.*snakeoil\.pem/c\SSLCertificateFile \/etc\/ssl\/certs\/server.crt' /etc/apache2/sites-available/default-ssl.conf
-RUN sed -i '/SSLCertificateKeyFile.*snakeoil\.key/c\SSLCertificateKeyFile \/etc\/ssl\/private\/server.key' /etc/apache2/sites-available/default-ssl.conf
+RUN sed -i '/SSLCertificateFile.*snakeoil\.pem/c\SSLCertificateFile \/etc\/ssl\/certs\/server.crt' /etc/apache2/sites-available/default-ssl.conf && \
+    sed -i '/SSLCertificateKeyFile.*snakeoil\.key/c\SSLCertificateKeyFile \/etc\/ssl\/private\/server.key' /etc/apache2/sites-available/default-ssl.conf
