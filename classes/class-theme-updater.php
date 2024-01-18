@@ -7,7 +7,8 @@ class Theme_Child_Updater
     private $theme;
     private $project_name;
     private $github_auth_args;
-
+    private $github_token;
+    
     public function __construct()
     {
         $this->github_token = GITHUB_TOKEN ?? null;
@@ -36,7 +37,7 @@ class Theme_Child_Updater
             return $transient;
         }
 
-        $release = $this->get_appropriate_release();
+        $release = $this->fetchLatestRelease();
         if (!$release) {
             return $transient;
         }
@@ -69,14 +70,24 @@ class Theme_Child_Updater
 
         $releases = json_decode($response_body);
 
-        if ($this->is_beta()) {
-            foreach ($releases as $release) {
-                if (strpos($release->tag_name, 'beta') !== false) {
-                    return $release;
+        $latestRelease = null;
+
+        for ($i = 0; $i < min(10, count($releases)); $i++) {
+            $release = $releases[$i];
+
+            // Check if it's a beta release
+            $isBeta = strpos($release->tag_name, 'beta') !== false;
+
+            // If it's not beta or if beta is allowed
+            if (!$isBeta || ($isBeta && $this->is_beta())) {
+                // Compare version and update the latest release if the new one is greater
+                if ($latestRelease === null || version_compare($release->tag_name, $latestRelease->tag_name, '>')) {
+                    $latestRelease = $release;
                 }
             }
         }
-        return $releases[0];
+
+        return $latestRelease;
     }
 
     private function get_asset_download_url($url)

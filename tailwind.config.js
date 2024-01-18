@@ -4,32 +4,32 @@ const plugin = require('tailwindcss/plugin');
 
 const themeColors = {
   primary: {
-    DEFAULT: '#8B5CF6',
-    50: '#25066C',
-    100: '#F9F7FF',
-    200: '#DED0FC',
-    300: '#C2A9FA',
-    400: '#A783F8',
-    500: '#8B5CF6',
-    600: '#6527F3',
-    700: '#4A0CD6',
-    800: '#3709A1',
-    900: '#25066C',
-    950: '#1C0451'
+    DEFAULT: '#FFB6B9',
+    50: '#FFFBFB',
+    100: '#FFF3F4',
+    200: '#FFE4E5',
+    300: '#FFD5D6',
+    400: '#FFC5C8',
+    500: '#FFB6B9',
+    600: '#FF979C',
+    700: '#FF797E',
+    800: '#FF5A61',
+    900: '#FF3C44',
+    950: '#FF2C35'
   },
   secondary: {
-    DEFAULT: '#F59E0B',
-    50: '#FCE4BB',
-    100: '#FBDCA8',
-    200: '#FACD81',
-    300: '#F8BD59',
-    400: '#F7AE32',
-    500: '#F59E0B',
-    600: '#C07C08',
-    700: '#8A5906',
-    800: '#543603',
-    900: '#1E1401',
-    950: '#030200'
+    DEFAULT: '#34495E',
+    50: '#8BA5BF',
+    100: '#7E9BB7',
+    200: '#6386A9',
+    300: '#517293',
+    400: '#435D78',
+    500: '#34495E',
+    600: '#2F4154',
+    700: '#293A4A',
+    800: '#243240',
+    900: '#1E2A37',
+    950: '#1B2732'
   },
   lightgray: {
     DEFAULT: '#F5F5F5',
@@ -39,11 +39,11 @@ const themeColors = {
     300: '#FAFAFA',
     400: '#F8F8F8',
     500: '#F5F5F5',
-    600: '#E8E8E8',
-    700: '#DCDCDC',
-    800: '#CFCFCF',
-    900: '#C2C2C2',
-    950: '#BCBCBC'
+    600: '#D9D9D9',
+    700: '#BDBDBD',
+    800: '#A1A1A1',
+    900: '#858585',
+    950: '#777777'
   },
   gray: {
     DEFAULT: '#2E2E2E',
@@ -53,11 +53,11 @@ const themeColors = {
     300: '#575757',
     400: '#424242',
     500: '#2E2E2E',
-    600: '#121212',
-    700: '#000000',
-    800: '#000000',
-    900: '#000000',
-    950: '#000000'
+    600: '#292929',
+    700: '#242424',
+    800: '#1F1F1F',
+    900: '#1A1A1A',
+    950: '#171717'
   },
   'accent-primary': {
     DEFAULT: '#FFD700',
@@ -67,11 +67,11 @@ const themeColors = {
     300: '#FFE452',
     400: '#FFDD29',
     500: '#FFD700',
-    600: '#C7A800',
-    700: '#8F7800',
-    800: '#574900',
-    900: '#1F1A00',
-    950: '#030200'
+    600: '#DBB900',
+    700: '#B89B00',
+    800: '#947D00',
+    900: '#705F00',
+    950: '#5E5000'
   },
   'accent-secondary': {
     DEFAULT: '#A8E6CE',
@@ -108,7 +108,7 @@ const safelistAttributes = [
   'ring',
   'focus:ring',
   'focus-visible:outline',
-  'outline'
+  'outline',
 ]
 
 const patterns = extendedColors.reduce((acc, color) => {
@@ -139,6 +139,8 @@ module.exports = {
     'text-center',
     'text-left',
     'text-right',
+    'font-primary',
+    'font-secondary',
   ],
   theme: {
     extend: {
@@ -158,7 +160,7 @@ module.exports = {
       },
       fontFamily: {
         'primary': ['Lato', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'],
-        'secondary': ['Lato', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'],
+        'secondary': ['Harabara Mais', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'],
       },
       fontSize: {
         'theme-h1': 'var(--elm_h1_font_size)',
@@ -193,54 +195,28 @@ module.exports = {
   plugins: [
     require('@tailwindcss/forms'),
     require('@tailwindcss/aspect-ratio'),
-    ...(process.env.RENDER_ASSETS === 'TRUE' ? [
-      require('tailwind-safelist-generator')({
-        path: 'safelist.txt',
-        patterns: patterns,
-      }),
-      plugin(function ({ addBase, theme }) {
-        const colors = theme('colors', {});
-        const cssVariables = {};
+    require('tailwind-safelist-generator')({
+      path: 'safelist.txt',
+      patterns: patterns,
+    }),
+    plugin(function ({ addBase, theme }) {
+      const colors = theme('colors', {});
+      const cssVariables = {};
 
-        Object.keys(colors).forEach(colorName => {
-          if (typeof colors[colorName] === 'object') {
-            Object.keys(colors[colorName]).forEach(shade => {
-              const variableName = `--color-${colorName}-${shade}`;
-              cssVariables[variableName] = colors[colorName][shade];
-            });
-          } else {
-            const variableName = `--color-${colorName}`;
-            cssVariables[variableName] = colors[colorName];
-          }
-        });
-        addBase({
-          ':root': cssVariables,
-        });
-      }),
-    ] : []),
+      Object.keys(colors).forEach(colorName => {
+        if (typeof colors[colorName] === 'object') {
+          Object.keys(colors[colorName]).forEach(shade => {
+            const variableName = `--color-${colorName}-${shade}`;
+            cssVariables[variableName] = colors[colorName][shade];
+          });
+        } else {
+          const variableName = `--color-${colorName}`;
+          cssVariables[variableName] = colors[colorName];
+        }
+      });
+      addBase({
+        ':root': cssVariables,
+      });
+    }),
   ],
 }
-
-// Helper function to create rgba colors with CSS variables
-const rgbaColor = (variable) => {
-  return `rgba(var(--${variable}-r),var(--${variable}-g),var(--${variable}-b), var(--tw-text-opacity, 1))`;
-};
-
-// Helper function to create fontSize with CSS variables
-const fontSize = (variable) => {
-  return `var(--${variable})`;
-};
-
-const customizerColors = [
-  'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'a',
-  'button-primary', 'button-secondary'
-];
-
-const themeSettings = customizerColors.reduce((acc, key) => {
-  acc[`theme-color-${key}`] = rgbaColor(`elm_${key}_font_color`);
-  acc[`theme-button-${key}`] = rgbaColor(`elm_${key}_bg_color`);
-  acc[`theme-button-${key}`] = rgbaColor(`elm_${key}_text_color`);
-  acc[`theme-button-${key}`] = rgbaColor(`elm_${key}_border_color`);
-  acc[`theme-${key}`] = fontSize(`elm_${key}_font_size`);
-  return acc;
-}, {});

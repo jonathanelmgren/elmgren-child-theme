@@ -22,6 +22,8 @@ services:
       - ./.wp:/var/www/html:delegated
     env_file:
       - ./.env
+    depends_on:
+      - db
 
   db:
     platform: linux/amd64
@@ -31,6 +33,7 @@ services:
       MARIADB_DATABASE: ${MARIADB_DATABASE}
       WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX}
       WORDPRESS_SITE_URL: ${WORDPRESS_SITE_URL}
+      MYSQL_ROOT_HOST: '%'
     volumes:
       - db:/var/lib/mysql:delegated
       - ./docker/sql:/docker-entrypoint-initdb.d:cached
